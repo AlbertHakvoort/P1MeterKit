@@ -1,0 +1,188 @@
+#Name of device
+substitutions:
+  device_name: p1meterkit
+  friendly_name: P1MeterKit
+  p1meterkit_software_version: "2023.10"
+
+esphome:
+  name: p1meterkit
+  friendly_name: P1MeterKit
+  board: d1_mini
+  platform: ESP8266
+ 
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+  
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Hotspot
+  ap:
+    ssid: "p1meterkit"
+    password: "p1meterkit"
+
+captive_portal:
+    
+web_server:
+  port: 80
+
+# Status LED of ESP
+# status_led:
+#   pin: GPIO05
+
+# Switch to restart the waterp1meter
+switch:
+  - platform: restart
+    id: switch_restart
+    name: "${friendly_name} Restart"
+        
+# I²C Bus
+#
+# This component sets up the I²C bus for the ESP8266.
+#
+# https://esphome.io/components/i2c.html
+#
+i2c:
+  sda: GPIO4
+  scl: GPIO5
+  scan: true
+  frequency: 400kHz
+
+#DSMR part
+uart:
+  rx_pin:
+    number: D6
+    inverted: true
+  baud_rate: 115200
+  data_bits: 7
+  parity: EVEN
+  stop_bits: 1
+  rx_buffer_size: 3000
+  
+
+  
+dsmr:  
+  crc_check: false
+  request_pin: D5
+  request_interval: 10s
+  receive_timeout: 200ms
+  max_telegram_length: 3000
+
+#DSMR part end
+
+sensor:
+  - platform: dsmr
+    energy_delivered_tariff1:
+      id: dsmr_electricity_delivered_1
+      name: "Energy Consumed Tariff 1"
+      state_class: total_increasing
+    energy_returned_tariff1:
+      id: dsmr_electricity_returned_1
+      name: "Energy Produced Tariff 1"
+      state_class: total_increasing
+    energy_delivered_tariff2:
+      id: dsmr_electricity_delivered_2
+      name: "Energy Consumed Tariff 2"
+      state_class: total_increasing
+    energy_returned_tariff2:
+      id: dsmr_electricity_returned_2
+      name: "Energy Produced Tariff 2"
+      state_class: total_increasing
+    power_delivered:
+      accuracy_decimals: 3
+      id: dsmr_electricity_currently_delivered
+      name: "Power Consumed"
+    power_returned:
+      accuracy_decimals: 3
+      id: dsmr_electricity_currently_returned
+      name: "Power Produced"
+    voltage_l1:
+      id: dsmr_phase_voltage_l1
+      name: "Voltage Phase 1"
+    voltage_l2:
+      id: dsmr_phase_voltage_l2
+      name: "Voltage Phase 2"
+    voltage_l3:
+      id: dsmr_phase_voltage_l3
+      name: "Voltage Phase 3"
+    current_l1:
+      id: dsmr_phase_power_current_l1
+      name: "Current Phase 1"
+    current_l2:
+      id: dsmr_phase_power_current_l2
+      name: "Current Phase 2"
+    current_l3:
+      id: dsmr_phase_power_current_l3
+      name: "Current Phase 3"
+    power_delivered_l1:
+      accuracy_decimals: 3
+      id: dsmr_phase_currently_delivered_l1
+      name: "Power Consumed Phase 1"
+    power_delivered_l2:
+      accuracy_decimals: 3
+      id: dsmr_phase_currently_delivered_l2
+      name: "Power Consumed Phase 2"
+    power_delivered_l3:
+      accuracy_decimals: 3
+      id: dsmr_phase_currently_delivered_l3
+      name: "Power Consumed Phase 3"
+    power_returned_l1:
+      accuracy_decimals: 3
+      id: dsmr_phase_currently_returned_l1
+      name: "Power Produced Phase 1"
+    power_returned_l2:
+      accuracy_decimals: 3
+      id: dsmr_phase_currently_returned_l2
+      name: "Power Produced Phase 2"
+    power_returned_l3:
+      accuracy_decimals: 3
+      id: dsmr_phase_currently_returned_l3
+      name: "Power Produced Phase 3"
+    gas_delivered:
+      id: dsmr_extra_device_delivered
+      name: "Gas Consumed"
+      state_class: total_increasing
+    
+    # Belgium
+    #gas_delivered_be:
+    #  name: ${friendly_name} Gas Delivered BE
+    
+    # Luxembourg
+    #energy_delivered_lux:
+    #  name: ${friendly_name} Energy Delivered Lux
+    #energy_returned_lux:
+    #  name: ${friendly_name} Energy Returned Lux
+  - platform: uptime
+    name: "Uptime"
+  - platform: wifi_signal
+    name: " Wi-Fi Signal"
+    update_interval: 60s
+
+text_sensor:
+  - platform: dsmr
+    identification:
+      name: "DSMR Identification"
+    p1_version:
+      name: "DSMR Version"
+    timestamp:
+      id: dsmr_timestamp
+      internal: true
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+    ssid:
+      name: "Wi-Fi SSID"
+    bssid:
+      name: "Wi-Fi BSSID"
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true
